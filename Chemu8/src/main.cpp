@@ -3,6 +3,7 @@
 
 #include "Memory.h"
 #include "Renderer.h"
+#include "InputHandler.h"
 
 int main(int argc, char* argv[])
 {
@@ -12,21 +13,18 @@ int main(int argc, char* argv[])
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return 1;
     }
-
-    Memory* memory = new Memory();
-    Renderer* renderer = new Renderer();
-
-    if (!renderer->InitializeRenderer())
+    // initialize components
+    Memory* pMemory = new Memory();
+    Renderer* pRenderer = new Renderer();
+    InputHandler* pInputHandler = new InputHandler();
+    if (!pRenderer->InitializeRenderer())
         return 1; // SDL failed init
-
     // setup for Delta time
     Uint64 lastTime = SDL_GetTicks();
-
     // print out RAM dump to console for debugging memory initialization
 #ifdef _DEBUG
-    memory->PrintRAM(0, 0xFFF);
+    pMemory->PrintRAM(0, 0xFFF);
 #endif
-
     // Main Loop
     bool running = true;
     SDL_Event event;
@@ -36,28 +34,16 @@ int main(int argc, char* argv[])
         Uint64 now = SDL_GetTicks();
         float  delta = (now - lastTime) / 1000.0f;  // seconds
         lastTime = now;
-
-        // SDL Event polling for exiting program
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_EVENT_QUIT)
-                running = false;
-
-            if (event.type == SDL_EVENT_KEY_DOWN &&
-                event.key.key == SDLK_ESCAPE)
-                running = false;
-        }
+        // Input polling
+        pInputHandler->ProcessInput();
+        // Update CPU
         
-        // Update
-        
-
         // Render
-        renderer->Draw();
+        pRenderer->Draw();
     }
     // Cleanup
-    delete renderer;
-    delete memory;
+    delete pRenderer;
+    delete pMemory;
     SDL_Quit();
-
     return 0;
 }
