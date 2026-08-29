@@ -13,10 +13,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // create memory, renderer
     Memory* memory = new Memory();
     Renderer* renderer = new Renderer();
-
 
     if (!renderer->InitializeRenderer())
         return 1; // SDL failed init
@@ -24,15 +22,14 @@ int main(int argc, char* argv[])
     // setup for Delta time
     Uint64 lastTime = SDL_GetTicks();
 
-    // Main Loop
-    bool running = true;
-    SDL_Event event;
-
     // print out RAM dump to console for debugging memory initialization
 #ifdef _DEBUG
     memory->PrintRAM(0, 0xFFF);
 #endif
 
+    // Main Loop
+    bool running = true;
+    SDL_Event event;
     while (running)
     {
         // Delta time
@@ -40,7 +37,7 @@ int main(int argc, char* argv[])
         float  delta = (now - lastTime) / 1000.0f;  // seconds
         lastTime = now;
 
-        // SDL Event polling
+        // SDL Event polling for exiting program
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_EVENT_QUIT)
@@ -52,7 +49,7 @@ int main(int argc, char* argv[])
         }
         
         // Update
-
+        
 
         // Render
         renderer->Draw();

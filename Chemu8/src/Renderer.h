@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
-class Renderer
+class Renderer final
 {
 public:
 	Renderer();
