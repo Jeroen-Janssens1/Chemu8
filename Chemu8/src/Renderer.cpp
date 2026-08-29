@@ -9,19 +9,19 @@ Renderer::Renderer()
 Renderer::~Renderer()
 {
     // clean up SDL related
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(m_pRenderer);
+    SDL_DestroyWindow(m_pWindow);
 }
 
 bool Renderer::InitializeRenderer()
 {
     // Create Window
-    window = SDL_CreateWindow(
+    m_pWindow = SDL_CreateWindow(
         "Controllable Square",   // title shown in the title bar
-        WINDOW_W, WINDOW_H,      // size of the window in pixels
+        m_WindowWidth, m_WindowHeight,      // size of the window in pixels
         0                        // flags: 0 means a plain default window
     );
-    if (!window)
+    if (!m_pWindow)
     {
         SDL_Log("SDL_CreateWindow failed: %s", SDL_GetError());
         SDL_Quit();
@@ -29,11 +29,11 @@ bool Renderer::InitializeRenderer()
     }
 
     // Create Renderer
-    renderer = SDL_CreateRenderer(window, nullptr);
-    if (!renderer)
+    m_pRenderer = SDL_CreateRenderer(m_pWindow, nullptr);
+    if (!m_pRenderer)
     {
         SDL_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(m_pWindow);
         SDL_Quit();
         return false;
     }
@@ -43,9 +43,9 @@ bool Renderer::InitializeRenderer()
 void Renderer::Draw()
 {
     // Clear the window to dark grey
-    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(m_pRenderer, 30, 30, 30, 255);
+    SDL_RenderClear(m_pRenderer);
 
     // Show the finished frame
-    SDL_RenderPresent(renderer);
+    SDL_RenderPresent(m_pRenderer);
 }

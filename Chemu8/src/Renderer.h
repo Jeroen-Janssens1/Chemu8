@@ -16,10 +16,10 @@ public:
 	void Draw();
 
 private:
-	SDL_Window* window = nullptr;
-	SDL_Renderer* renderer = nullptr;
-	const int   WINDOW_W = 800;     // window width  in pixels
-	const int   WINDOW_H = 600;     // window height in pixels
+	SDL_Window* m_pWindow = nullptr;
+	SDL_Renderer* m_pRenderer = nullptr;
+	const int   m_WindowWidth = 800;     // window width  in pixels
+	const int   m_WindowHeight = 600;     // window height in pixels
 
 };
 
