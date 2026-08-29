@@ -1,44 +1,11 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+
 #include "Memory.h"
-
-const int   WINDOW_W = 800;     // window width  in pixels
-const int   WINDOW_H = 600;     // window height in pixels
-const float SQUARE_SZ = 80.0f;   // side length of the square
-const float SPEED = 300.0f;  // movement speed in pixels per second
-
-bool initSDL(SDL_Window* window, SDL_Renderer* renderer)
-{
-    // Create Window
-    window = SDL_CreateWindow(
-        "Controllable Square",   // title shown in the title bar
-        WINDOW_W, WINDOW_H,      // size of the window in pixels
-        0                        // flags: 0 means a plain default window
-    );
-    if (!window)
-    {
-        SDL_Log("SDL_CreateWindow failed: %s", SDL_GetError());
-        SDL_Quit();
-        return false;
-    }
-
-    // Create Renderer
-    renderer = SDL_CreateRenderer(window, nullptr);
-    if (!renderer)
-    {
-        SDL_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return false;
-    }
-    return true;
-}
+#include "Renderer.h"
 
 int main(int argc, char* argv[])
 {
-    // create memory
-    Memory memory = Memory();
-
     // Init SDL
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -46,10 +13,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
+    // create memory, renderer
+    Memory* memory = new Memory();
+    Renderer* renderer = new Renderer();
 
-    if (!initSDL(window, renderer))
+
+    if (!renderer->InitializeRenderer())
         return 1; // SDL failed init
 
     // setup for Delta time
@@ -59,11 +28,9 @@ int main(int argc, char* argv[])
     bool running = true;
     SDL_Event event;
 
-    
-
     // print out RAM dump to console for debugging memory initialization
 #ifdef _DEBUG
-    memory.PrintRAM(0, 0xFFF);
+    memory->PrintRAM(0, 0xFFF);
 #endif
 
     while (running)
@@ -88,16 +55,11 @@ int main(int argc, char* argv[])
 
 
         // Render
-        // Clear the window to dark grey
-        SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-        SDL_RenderClear(renderer);
-
-        // Show the finished frame
-        SDL_RenderPresent(renderer);
+        renderer->Draw();
     }
     // Cleanup
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    delete renderer;
+    delete memory;
     SDL_Quit();
 
     return 0;
