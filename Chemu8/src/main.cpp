@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
         float  delta = (now - lastTime) / 1000.0f;  // seconds
         lastTime = now;
         // Input polling
-        pInputHandler->ProcessInput();
+        running = pInputHandler->ProcessInput();
         // Update CPU
         
         // Render

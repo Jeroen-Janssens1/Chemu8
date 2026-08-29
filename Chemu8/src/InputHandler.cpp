@@ -2,17 +2,17 @@
 
 bool InputHandler::ProcessInput()
 {
-    bool quit = false;
+    bool running = true;
     while (SDL_PollEvent(&m_Event)) {
         switch (m_Event.type) {
             case SDL_EVENT_QUIT: {
-                quit = true;
+                running = false;
             } break;
 
             case SDL_EVENT_KEY_DOWN: {
                 switch (m_Event.key.key) {
                     case SDLK_ESCAPE: {
-                        quit = true;
+                        running = false;
                     } break;
 
                     case SDLK_X: {
@@ -150,5 +150,5 @@ bool InputHandler::ProcessInput()
             } break;
         }
     }
-    return quit;
+    return running;
 }
