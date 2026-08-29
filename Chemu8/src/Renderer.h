@@ -5,6 +5,12 @@ class Renderer final
 public:
 	Renderer();
 	~Renderer();
+	// rule of 5, we only ever want 1 renderer anyways so simply disable move-and-copy-ability
+	Renderer(const Renderer&) = delete;
+	Renderer& operator=(const Renderer&) = delete;
+	Renderer(Renderer&&) = delete;
+	Renderer& operator=(Renderer&&) = delete;
+
 
 	bool InitializeRenderer();
 	void Draw();

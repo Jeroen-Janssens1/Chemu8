@@ -20,7 +20,6 @@ class Memory final
 {
 public:
 	Memory();
-	~Memory() = default;
 
 	unsigned char FetchData(unsigned short addr);
 
