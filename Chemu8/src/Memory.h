@@ -40,6 +40,7 @@ private:
 	unsigned short m_FontMemOffset = 0x050;
 	unsigned char m_Memory[4096]; // our RAM memory
 	unsigned short m_Stack[16]; // we store the stack as an array of shorts because this will only hold memory addresses (16 bit values).
+	const unsigned char m_StackSize = 16; // the size of the stack (16 addresses)
 	unsigned short sp; // the stack pointer
 	const unsigned char m_Chip8Fontset[80] = // the fontset which will be loaded into memory later. Stored as var here for easy editing later
 	{

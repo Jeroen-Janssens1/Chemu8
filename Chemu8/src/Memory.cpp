@@ -26,9 +26,8 @@ void Memory::WriteData(unsigned short addr, unsigned char value)
 
 bool Memory::PushStack(unsigned short addr)
 {
-	// stack pointer grows upward; sp is uninitialized until constructor sets it
 	// ensure sp is within bounds 0..15
-	if (sp >= 16) return false;
+	if (sp >= m_StackSize) return false;
 	m_Stack[sp] = addr;
 	sp++;
 	return true;
