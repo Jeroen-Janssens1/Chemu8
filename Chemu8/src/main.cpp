@@ -4,11 +4,14 @@
 #include "Memory.h"
 #include "Renderer.h"
 #include "InputHandler.h"
+#include "Graphics.h"
+#include "CPU.h"
+#include "Audio.h"
 
 int main(int argc, char* argv[])
 {
     // Init SDL
-    if (!SDL_Init(SDL_INIT_VIDEO))
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
     {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return 1;
@@ -17,8 +20,12 @@ int main(int argc, char* argv[])
     Memory* pMemory = new Memory();
     Renderer* pRenderer = new Renderer();
     InputHandler* pInputHandler = new InputHandler();
+	Graphics* pGraphics = new Graphics();
     if (!pRenderer->InitializeRenderer())
         return 1; // SDL failed init
+    Audio* pAudio = new Audio();
+    pAudio->Initialize();
+    CPU* pCPU = new CPU(pMemory, pGraphics, pInputHandler, pAudio);
     // setup for Delta time
     Uint64 lastTime = SDL_GetTicks();
     // print out RAM dump to console for debugging memory initialization
@@ -36,13 +43,21 @@ int main(int argc, char* argv[])
         // Input polling
         running = pInputHandler->ProcessInput();
         // Update CPU
-        
+		pCPU->RunCycle();
+        // Update timers at 60Hz
+		pCPU->UpdateTimers(delta);
+		// Update audio
+        pAudio->Update(delta);
         // Render
         pRenderer->Draw();
     }
     // Cleanup
     delete pRenderer;
+    delete pCPU;
+    delete pAudio;
     delete pMemory;
+    delete pInputHandler;
+    delete pGraphics;
     SDL_Quit();
     return 0;
 }
