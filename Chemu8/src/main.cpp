@@ -18,6 +18,15 @@ int main(int argc, char* argv[])
     }
     // initialize components
     Memory* pMemory = new Memory();
+    // Load ROM from command line (if provided)
+    if (argc > 1)
+    {
+        if (!pMemory->LoadROM(argv[1]))
+        {
+            SDL_Log("Failed to load ROM: %s", argv[1]);
+            return 1;
+        }
+    }
     Renderer* pRenderer = new Renderer();
     InputHandler* pInputHandler = new InputHandler();
 	Graphics* pGraphics = new Graphics();

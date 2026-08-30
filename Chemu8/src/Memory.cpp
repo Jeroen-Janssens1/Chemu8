@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <format>
+#include <fstream>
+#include <vector>
 
 Memory::Memory()
 	:m_Memory{},
@@ -12,6 +14,28 @@ Memory::Memory()
 	int fontsetSize = sizeof(m_Chip8Fontset);
 	for (int i = 0; i < fontsetSize; ++i)
 		m_Memory[i+m_FontMemOffset] = m_Chip8Fontset[i]; // store fontset into memory from 0x050 to 0x09F
+}
+
+bool Memory::LoadROM(const char* filepath)
+{
+	if (!filepath) return false;
+	std::ifstream in(filepath, std::ios::binary | std::ios::ate);
+	if (!in) return false;
+	std::streamsize size = in.tellg();
+	in.seekg(0, std::ios::beg);
+	if (size <= 0) return false;
+
+	const unsigned short loadAddr = 0x200;
+	const int maxSize = sizeof(m_Memory) - loadAddr;
+	if (size > maxSize) return false; // ROM too large to fit
+
+	std::vector<char> buffer((size_t)size);
+	if (!in.read(buffer.data(), size)) return false;
+
+	for (std::streamsize i = 0; i < size; ++i)
+		m_Memory[loadAddr + (size_t)i] = static_cast<unsigned char>(buffer[(size_t)i]);
+
+	return true;
 }
 
 unsigned char Memory::FetchData(unsigned short addr)

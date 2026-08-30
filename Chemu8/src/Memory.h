@@ -25,6 +25,10 @@ public:
 
 	void WriteData(unsigned short addr, unsigned char value);
 
+	// Load a ROM file into memory at the program start address (0x200).
+	// Returns true on success.
+	bool LoadROM(const char* filepath);
+
 	// Call stack helpers
 	// Push a return address onto the stack. Returns true on success, false if stack is full.
 	bool PushStack(unsigned short addr);
