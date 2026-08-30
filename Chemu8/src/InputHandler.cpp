@@ -152,3 +152,16 @@ bool InputHandler::ProcessInput()
     }
     return running;
 }
+
+bool InputHandler::AnyKeyPressed(unsigned char &outKey) const
+{
+    for (unsigned char i = 0; i < 16; ++i)
+    {
+        if (m_InputKeys[i])
+        {
+            outKey = i;
+            return true;
+        }
+    }
+    return false;
+}
