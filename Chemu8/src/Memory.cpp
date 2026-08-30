@@ -24,6 +24,24 @@ void Memory::WriteData(unsigned short addr, unsigned char value)
 	m_Memory[addr] = value;
 }
 
+bool Memory::PushStack(unsigned short addr)
+{
+	// stack pointer grows upward; sp is uninitialized until constructor sets it
+	// ensure sp is within bounds 0..15
+	if (sp >= 16) return false;
+	m_Stack[sp] = addr;
+	sp++;
+	return true;
+}
+
+bool Memory::PopStack(unsigned short &outAddr)
+{
+	if (sp == 0) return false;
+	sp--;
+	outAddr = m_Stack[sp];
+	return true;
+}
+
 #ifdef _DEBUG
 void Memory::PrintRAM(unsigned short startAddr, unsigned short endAddr)
 {

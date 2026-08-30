@@ -25,6 +25,13 @@ public:
 
 	void WriteData(unsigned short addr, unsigned char value);
 
+	// Call stack helpers
+	// Push a return address onto the stack. Returns true on success, false if stack is full.
+	bool PushStack(unsigned short addr);
+
+	// Pop a return address from the stack. Returns true on success, false if stack is empty.
+	bool PopStack(unsigned short &outAddr);
+
 	#ifdef _DEBUG
 	void PrintRAM(unsigned short startAddr, unsigned short endAddr); // debug function to print RAM memory to console window to check RAM state
 	#endif
