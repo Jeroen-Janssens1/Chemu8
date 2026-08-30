@@ -5,7 +5,8 @@
 
 Memory::Memory()
 	:m_Memory{},
-	m_Stack{}
+	m_Stack{},
+	sp{0}
 {
 	// load in the font into the memory to 'initialize' it
 	int fontsetSize = sizeof(m_Chip8Fontset);
@@ -16,6 +17,11 @@ Memory::Memory()
 unsigned char Memory::FetchData(unsigned short addr)
 {
 	return m_Memory[addr];
+}
+
+void Memory::WriteData(unsigned short addr, unsigned char value)
+{
+	m_Memory[addr] = value;
 }
 
 #ifdef _DEBUG

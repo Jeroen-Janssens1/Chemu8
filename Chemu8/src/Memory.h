@@ -23,6 +23,8 @@ public:
 
 	unsigned char FetchData(unsigned short addr);
 
+	void WriteData(unsigned short addr, unsigned char value);
+
 	#ifdef _DEBUG
 	void PrintRAM(unsigned short startAddr, unsigned short endAddr); // debug function to print RAM memory to console window to check RAM state
 	#endif

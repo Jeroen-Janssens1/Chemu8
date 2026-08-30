@@ -27,7 +27,6 @@ int main(int argc, char* argv[])
 #endif
     // Main Loop
     bool running = true;
-    SDL_Event event;
     while (running)
     {
         // Delta time
