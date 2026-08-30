@@ -15,8 +15,6 @@ CPU::CPU(Memory* memory, Graphics* graphics, InputHandler* input, Audio* audio)
 	// Program counter starts at 0x200 in most CHIP-8 implementations
 	m_Pc = 0x200;
 	m_Opcode = 0;
-	// nothing to initialize here for stack (managed by Memory)
-
 	// Initialize primary table to NULL handlers
 	for (int i = 0; i < 16; ++i) m_OpTable[i] = &CPU::OpcodeNULL;
 	m_OpTable[0x0] = &CPU::Opcode0;
@@ -64,16 +62,13 @@ CPU::CPU(Memory* memory, Graphics* graphics, InputHandler* input, Audio* audio)
 	m_TableF[0x33] = &CPU::OpcodeFx33;
 	m_TableF[0x55] = &CPU::OpcodeFx55;
 	m_TableF[0x65] = &CPU::OpcodeFx65;
-
-	// Audio is provided by the caller (main); assign pointer (non-owning)
-	// m_pAudio stays as passed in constructor initializer list
 }
 
 void CPU::RunCycle()
 {
 	// fetch opcode
 	m_Opcode = (m_pMemory->FetchData(m_Pc) << 8u) | m_pMemory->FetchData(m_Pc + 1);
-	// execute current opcode (m_Opcode should be set by the fetch stage)
+	// execute current opcode
 	unsigned short firstNibble = (m_Opcode & 0xF000u) >> 12u;
 	auto handler = m_OpTable[firstNibble];
 	if (handler)
@@ -149,7 +144,8 @@ void CPU::OpcodeNULL()
 // 0x0 group implementations
 void CPU::Opcode00E0()
 {
-	// Clear screen - Graphics interface not fully specified here; assume graphics will be handled elsewhere
+	// Clear screen
+	if (m_pGraphics) m_pGraphics->Clear();
 	m_Pc += 2;
 }
 
@@ -181,6 +177,8 @@ void CPU::Opcode8xy1()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
+	// According to spec, these logical ops clear VF
+	m_V[0xF] = 0;
 	m_V[x] |= m_V[y];
 	m_Pc += 2;
 }
@@ -189,6 +187,8 @@ void CPU::Opcode8xy2()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
+	// Logical AND clears VF
+	m_V[0xF] = 0;
 	m_V[x] &= m_V[y];
 	m_Pc += 2;
 }
@@ -197,6 +197,8 @@ void CPU::Opcode8xy3()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
+	// Logical XOR clears VF
+	m_V[0xF] = 0;
 	m_V[x] ^= m_V[y];
 	m_Pc += 2;
 }
@@ -205,9 +207,14 @@ void CPU::Opcode8xy4()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
-	unsigned short sum = (unsigned short)m_V[x] + (unsigned short)m_V[y];
+	// Read operands first so VF writes don't affect input operands
+	unsigned short vx = m_V[x];
+	unsigned short vy = m_V[y];
+	unsigned short sum = vx + vy;
+	unsigned char result = (unsigned char)(sum & 0xFF);
+	// Write result first, then set VF so that VF is based on original operands
+	m_V[x] = result;
 	m_V[0xF] = (sum > 0xFF) ? 1 : 0;
-	m_V[x] = (unsigned char)(sum & 0xFF);
 	m_Pc += 2;
 }
 
@@ -215,17 +222,27 @@ void CPU::Opcode8xy5()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
-	m_V[0xF] = (m_V[x] > m_V[y]) ? 1 : 0;
-	m_V[x] = m_V[x] - m_V[y];
+	// Read operands first
+	unsigned short vx = m_V[x];
+	unsigned short vy = m_V[y];
+	unsigned char result = (unsigned char)((vx - vy) & 0xFF);
+	// Write result then set VF (VF = 1 if no borrow, i.e., vx >= vy)
+	m_V[x] = result;
+	m_V[0xF] = (vx >= vy) ? 1 : 0;
 	m_Pc += 2;
 }
 
 void CPU::Opcode8xy6()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
-	// Shift right: VF set to least significant bit prior to shift
-	m_V[0xF] = m_V[x] & 0x1;
-	m_V[x] >>= 1;
+	// Traditionally some interpreters use Vx as source, others use Vy.
+	// Use Vy as source here so VF can be used as Vy input in tests.
+	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
+	unsigned char vy = m_V[y];
+	unsigned char result = vy >> 1;
+	// Write result then set VF (LSB of original vy)
+	m_V[x] = result;
+	m_V[0xF] = vy & 0x1;
 	m_Pc += 2;
 }
 
@@ -233,17 +250,26 @@ void CPU::Opcode8xy7()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
-	m_V[0xF] = (m_V[y] > m_V[x]) ? 1 : 0;
-	m_V[x] = m_V[y] - m_V[x];
+	// Read operands first
+	unsigned short vx = m_V[x];
+	unsigned short vy = m_V[y];
+	unsigned char result = (unsigned char)((vy - vx) & 0xFF);
+	// Write result then set VF (VF = 1 if no borrow, i.e., vy >= vx)
+	m_V[x] = result;
+	m_V[0xF] = (vy >= vx) ? 1 : 0;
 	m_Pc += 2;
 }
 
 void CPU::Opcode8xyE()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
-	// Shift left: VF set to most significant bit prior to shift
-	m_V[0xF] = (m_V[x] & 0x80) >> 7;
-	m_V[x] <<= 1;
+	// Use Vy as source so VF can be used as Vy input in tests
+	unsigned char y = (m_Opcode & 0x00F0u) >> 4u;
+	unsigned char vy = m_V[y];
+	unsigned char result = (unsigned char)((vy << 1) & 0xFF);
+	// Write result then set VF (MSB of original vy)
+	m_V[x] = result;
+	m_V[0xF] = (vy & 0x80) >> 7;
 	m_Pc += 2;
 }
 
@@ -294,16 +320,33 @@ void CPU::OpcodeFx0A()
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	if (m_pInput)
 	{
+		// If we're already waiting for a key release, check release first
+		if (m_WaitingForKeyRelease)
+		{
+			// Wait until the previously recorded key is released
+			if (!m_pInput->GetKeyState(m_WaitingKey))
+			{
+				// key released: stop waiting and advance PC
+				m_WaitingForKeyRelease = false;
+				m_WaitingKey = 0;
+				m_WaitingKeyRegister = 0;
+				m_Pc += 2;
+			}
+			// otherwise stay blocked
+			return;
+		}
+
 		unsigned char pressedKey = 0;
 		if (m_pInput->AnyKeyPressed(pressedKey))
 		{
+			// store pressed key into Vx and enter wait-for-release state
 			m_V[x] = pressedKey;
-			m_Pc += 2;
+			m_WaitingForKeyRelease = true;
+			m_WaitingKey = pressedKey;
+			m_WaitingKeyRegister = x;
+			// do not advance PC yet; will advance after release
 		}
-		else
-		{
-			// do not advance PC; blocking behaviour until key pressed
-		}
+		// else do nothing, remain blocked
 	}
 	else
 	{
@@ -361,6 +404,9 @@ void CPU::OpcodeFx55()
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	for (unsigned char idx = 0; idx <= x; ++idx)
 		m_pMemory->WriteData(m_I + idx, m_V[idx]);
+
+	// Original CHIP-8 behavior: I is incremented by X + 1 after operation
+	m_I = (unsigned short)(m_I + x + 1);
 	m_Pc += 2;
 }
 
@@ -370,6 +416,9 @@ void CPU::OpcodeFx65()
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
 	for (unsigned char idx = 0; idx <= x; ++idx)
 		m_V[idx] = m_pMemory->FetchData(m_I + idx);
+
+	// Original CHIP-8 behavior: I is incremented by X + 1 after operation
+	m_I = (unsigned short)(m_I + x + 1);
 	m_Pc += 2;
 }
 
@@ -467,19 +516,49 @@ void CPU::OpcodeDxyn()
 	unsigned char x = m_V[(m_Opcode & 0x0F00u) >> 8u];
 	unsigned char y = m_V[(m_Opcode & 0x00F0u) >> 4u];
 	unsigned char height = m_Opcode & 0x000Fu;
-	// Since Graphics::SetPixel does not report collision, set VF to 0
+	// Wrap sprites: coordinates wrap around the screen edges (modulo 64x32)
+	const unsigned char* screen = m_pGraphics->GetScreen();
+	unsigned char screenW = m_pGraphics->GetWidth();
+	unsigned char screenH = m_pGraphics->GetHeight();
+
 	m_V[0xF] = 0;
+
+	const unsigned int sx = (unsigned int)x;
+	const unsigned int sy = (unsigned int)y;
+	const bool wrapHoriz = sx >= screenW;
+	const bool wrapVert = sy >= screenH;
+	const unsigned int baseXWrapped = sx % screenW;
+	const unsigned int baseYWrapped = sy % screenH;
+
 	for (unsigned char row = 0; row < height; ++row)
 	{
-		unsigned char spriteByte = m_pMemory->FetchData(m_I + row);
+		const unsigned char spriteByte = m_pMemory->FetchData(m_I + row);
+		if (spriteByte == 0) continue;
+
+		// compute py once per row
+		unsigned int py = wrapVert ? (baseYWrapped + (unsigned int)row) % screenH : (sy + (unsigned int)row);
+		if (!wrapVert && py >= screenH) continue; // clip rows beyond bottom when not wrapping
+
 		for (unsigned char bit = 0; bit < 8; ++bit)
 		{
-			if ((spriteByte & (0x80 >> bit)) != 0)
+			if ((spriteByte & (0x80 >> bit)) == 0) continue;
+
+			unsigned int px;
+			if (wrapHoriz)
 			{
-				unsigned char px = (x + bit) % 64; // wrap horizontally (64)
-				unsigned char py = (y + row) % 32; // wrap vertically (32)
-				m_pGraphics->SetPixel(px, py);
+				// wrap horizontally
+				px = (baseXWrapped + (unsigned int)bit) % screenW;
 			}
+			else
+			{
+				// no horizontal wrap: clip pixels past right edge
+				px = sx + (unsigned int)bit;
+				if (px >= screenW) continue;
+			}
+
+			const unsigned int idx = py * screenW + px;
+			if (screen[idx] != 0) m_V[0xF] = 1; // collision if pixel was set
+			m_pGraphics->SetPixel((unsigned char)px, (unsigned char)py);
 		}
 	}
 	m_Pc += 2;

@@ -14,12 +14,16 @@ public:
 
 	bool InitializeRenderer();
 	void Draw();
+	void SetGraphics(class Graphics* graphics) { m_pGraphics = graphics; }
+
+private:
+	Graphics* m_pGraphics = nullptr;
 
 private:
 	SDL_Window* m_pWindow = nullptr;
 	SDL_Renderer* m_pRenderer = nullptr;
-	const int   m_WindowWidth = 800;     // window width  in pixels
-	const int   m_WindowHeight = 600;     // window height in pixels
+	const int   m_WindowWidth = 1280;     // window width  in pixels
+	const int   m_WindowHeight = 640;     // window height in pixels
 
 };
 

@@ -9,6 +9,10 @@ class Graphics
 {
 public:
 	void SetPixel(unsigned char xCoord, unsigned char yCoord);
+	const unsigned char* GetScreen() const { return m_Screen; }
+	unsigned char GetWidth() const { return m_ScreenWidth; }
+	unsigned char GetHeight() const { return m_ScreenHeight; }
+	void Clear();
 
 #ifdef _DEBUG
 	void PrintScreenVals();

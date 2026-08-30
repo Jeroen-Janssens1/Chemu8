@@ -40,6 +40,11 @@ private:
 	// Audio subsystem (managed by CPU)
 	Audio* m_pAudio{};
 
+	// Fx0A waiting state: when true CPU is waiting for the previously detected key to be released
+	bool m_WaitingForKeyRelease{};
+	unsigned char m_WaitingKey{}; // which key we are waiting to be released
+	unsigned char m_WaitingKeyRegister{}; // which Vx register the pressed key was stored into
+
 
 	// Opcode functions
 	// Primary opcode group handlers (first nibble)

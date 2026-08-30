@@ -32,6 +32,8 @@ int main(int argc, char* argv[])
 	Graphics* pGraphics = new Graphics();
     if (!pRenderer->InitializeRenderer())
         return 1; // SDL failed init
+    // Give renderer access to graphics buffer
+    pRenderer->SetGraphics(pGraphics);
     Audio* pAudio = new Audio();
     pAudio->Initialize();
     CPU* pCPU = new CPU(pMemory, pGraphics, pInputHandler, pAudio);
