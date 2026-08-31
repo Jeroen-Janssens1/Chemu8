@@ -3,7 +3,7 @@
 class Renderer final
 {
 public:
-	Renderer();
+	Renderer() = default;
 	~Renderer();
 	// rule of 5, we only ever want 1 renderer anyways so simply disable move-and-copy-ability
 	Renderer(const Renderer&) = delete;
