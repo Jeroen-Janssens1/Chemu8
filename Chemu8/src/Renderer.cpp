@@ -2,15 +2,10 @@
 #include "Graphics.h"
 
 
-Renderer::Renderer()
-{
-
-}
-
 Renderer::~Renderer()
 {
     // clean up SDL related
-    SDL_DestroyRenderer(m_pRenderer);
+    SDL_DestroyRenderer(m_pSDLRenderer);
     SDL_DestroyWindow(m_pWindow);
 }
 
@@ -30,8 +25,8 @@ bool Renderer::InitializeRenderer()
     }
 
     // Create Renderer
-    m_pRenderer = SDL_CreateRenderer(m_pWindow, nullptr);
-    if (!m_pRenderer)
+    m_pSDLRenderer = SDL_CreateRenderer(m_pWindow, nullptr);
+    if (!m_pSDLRenderer)
     {
         SDL_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
         SDL_DestroyWindow(m_pWindow);
@@ -44,10 +39,10 @@ bool Renderer::InitializeRenderer()
 void Renderer::Draw()
 {
     // Clear the window to dark grey
-    SDL_SetRenderDrawColor(m_pRenderer, 30, 30, 30, 255);
-    SDL_RenderClear(m_pRenderer);
+    SDL_SetRenderDrawColor(m_pSDLRenderer, 30, 30, 30, 255);
+    SDL_RenderClear(m_pSDLRenderer);
 
-    if (m_pGraphics && m_pRenderer)
+    if (m_pGraphics && m_pSDLRenderer)
     {
         const unsigned char* screen = m_pGraphics->GetScreen();
         unsigned char screenW = m_pGraphics->GetWidth();
@@ -74,15 +69,15 @@ void Renderer::Draw()
                 unsigned char p = screen[y * screenW + x];
                 if (p)
                 {
-                    SDL_SetRenderDrawColor(m_pRenderer, 255, 255, 255, 255);
+                    SDL_SetRenderDrawColor(m_pSDLRenderer, 255, 255, 255, 255);
                     rectF.x = (float)(offsetX + x * scale);
                     rectF.y = (float)(offsetY + y * scale);
-                    SDL_RenderFillRect(m_pRenderer, &rectF);
+                    SDL_RenderFillRect(m_pSDLRenderer, &rectF);
                 }
             }
         }
     }
 
     // Show the finished frame
-    SDL_RenderPresent(m_pRenderer);
+    SDL_RenderPresent(m_pSDLRenderer);
 }

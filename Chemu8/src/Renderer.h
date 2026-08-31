@@ -21,7 +21,7 @@ private:
 
 private:
 	SDL_Window* m_pWindow = nullptr;
-	SDL_Renderer* m_pRenderer = nullptr;
+	SDL_Renderer* m_pSDLRenderer = nullptr;
 	const int   m_WindowWidth = 1280;     // window width  in pixels
 	const int   m_WindowHeight = 640;     // window height in pixels
 

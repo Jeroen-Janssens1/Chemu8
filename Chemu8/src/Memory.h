@@ -1,38 +1,14 @@
-// This massive comment block simply explains the 'documentation' of the CHIP-8 memory (or more percisely the COSMAC VIP RAM memory and how the CHIP-8 interpreter used it).
-// For more in-depth information, documentation is available online and linked in the GitHub repository this code is stored on.
-// 
-// Overview of RAM memory:
-// 4096 bytes in size
-// first 512 addresses (0x000 till 0x1FF) are reserved to store the interpreter itself (for us these will simply be empty)
-// The font needs to be stored somewhere in those first 512 addresses.
-//
-// Overview of Font:
-// 0-9 as well as A,B,C,D,E,F (hexadecimal digits basically) are the existing sprites. Each is 4 pixels wide and 5 pixels tall
-// each sprite exists out of 5 bytes of data (total of 16*5 = 80 bytes)
-// It seems a loose 'convention' has developed to store the fonts in addresses 050-09F. I will follow this 'convention' here because why not.
-//
-// Call Stack:
-// The Call Stack originally had space for 16 memory addresses (so 32 bytes in size). I will (for now) follow this limitation to stay fateful to the original.
-
 #pragma once
-
 class Memory final
 {
 public:
 	Memory();
-
 	unsigned char FetchData(unsigned short addr);
-
 	void WriteData(unsigned short addr, unsigned char value);
-
 	// Load a ROM file into memory at the program start address (0x200).
-	// Returns true on success.
 	bool LoadROM(const char* filepath);
-
-	// Call stack helpers
 	// Push a return address onto the stack. Returns true on success, false if stack is full.
 	bool PushStack(unsigned short addr);
-
 	// Pop a return address from the stack. Returns true on success, false if stack is empty.
 	bool PopStack(unsigned short &outAddr);
 

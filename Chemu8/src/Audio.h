@@ -7,6 +7,11 @@ public:
 	Audio();
 	~Audio();
 
+	Audio(const Audio&) = delete;
+	Audio& operator=(const Audio&) = delete;
+	Audio(Audio&&) = delete;
+	Audio& operator=(Audio&&) = delete;
+
 	// Initialize audio device. Returns true on success.
 	bool Initialize(int sampleRate = 48000);
 
@@ -17,9 +22,8 @@ public:
 	void Update(float deltaSeconds);
 
 private:
-	SDL_AudioDeviceID m_Device{0};
 	SDL_AudioSpec     m_Spec{};
-	SDL_AudioStream* m_Stream{nullptr};
+	SDL_AudioStream* m_Stream;
 	bool m_Playing{false};
 	int m_SampleRate{48000};
 	float m_Phase{0.0f};

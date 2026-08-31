@@ -6,9 +6,6 @@
 #include <cstdlib>
 #include <iostream>
 
-// Call stack is stored in Memory; CPU will use Memory::PushStack/PopStack to
-// manage CALL/RET.
-
 CPU::CPU(Memory* memory, Graphics* graphics, InputHandler* input, Audio* audio)
 	: m_pMemory(memory), m_pGraphics(graphics), m_pInput(input), m_pAudio(audio)
 {
@@ -141,7 +138,7 @@ void CPU::OpcodeNULL()
 	m_Pc += 2;
 }
 
-// 0x0 group implementations
+// Clear screen
 void CPU::Opcode00E0()
 {
 	// Clear screen
@@ -149,6 +146,7 @@ void CPU::Opcode00E0()
 	m_Pc += 2;
 }
 
+// Return from subroutine
 void CPU::Opcode00EE()
 {
 	if (m_pMemory)
@@ -160,11 +158,12 @@ void CPU::Opcode00EE()
 			return;
 		}
 	}
-	// stack underflow or no memory: treat as NOP
-	m_Pc += 2;
+	// stack underflow or no memory: treat as error
+	OpcodeNULL();
 }
 
 // 0x8 group implementations (arithmetic/logic)
+// set vX to value of vY
 void CPU::Opcode8xy0()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -173,6 +172,7 @@ void CPU::Opcode8xy0()
 	m_Pc += 2;
 }
 
+// set vX to result of bitwise vX OR vY
 void CPU::Opcode8xy1()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -183,6 +183,7 @@ void CPU::Opcode8xy1()
 	m_Pc += 2;
 }
 
+// set vX to result of bitwise vX AND vY
 void CPU::Opcode8xy2()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -193,6 +194,7 @@ void CPU::Opcode8xy2()
 	m_Pc += 2;
 }
 
+// set vX to result of bitwise vX XOR vY
 void CPU::Opcode8xy3()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -203,6 +205,7 @@ void CPU::Opcode8xy3()
 	m_Pc += 2;
 }
 
+// set vX to result of vX + vY, set VF to 1 if overflow, else 0
 void CPU::Opcode8xy4()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -218,6 +221,7 @@ void CPU::Opcode8xy4()
 	m_Pc += 2;
 }
 
+// set vX to result of vX - vY, set VF to 0 if underflow, else 1
 void CPU::Opcode8xy5()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -232,6 +236,7 @@ void CPU::Opcode8xy5()
 	m_Pc += 2;
 }
 
+// set vX to result of vY >> 1, set VF to LSB of original vY
 void CPU::Opcode8xy6()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -246,6 +251,7 @@ void CPU::Opcode8xy6()
 	m_Pc += 2;
 }
 
+// set vX to result of vY - vX, set VF to 0 if underflow, else 1
 void CPU::Opcode8xy7()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -260,6 +266,7 @@ void CPU::Opcode8xy7()
 	m_Pc += 2;
 }
 
+// set vX to result of vY << 1, set VF to MSB of original vY
 void CPU::Opcode8xyE()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -274,6 +281,7 @@ void CPU::Opcode8xyE()
 }
 
 // 0xE group (input related)
+// Skip next instruction if key with the value of Vx is pressed
 void CPU::OpcodeEx9E()
 {
 	// Skip next instruction if key with the value of Vx is pressed
@@ -290,6 +298,7 @@ void CPU::OpcodeEx9E()
 	}
 }
 
+// Skip next instruction if key with the value of Vx is not pressed
 void CPU::OpcodeExA1()
 {
 	// Skip next instruction if key with the value of Vx is not pressed
@@ -306,7 +315,7 @@ void CPU::OpcodeExA1()
 	}
 }
 
-// 0xF group
+// set Vx = delay timer value
 void CPU::OpcodeFx07()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -314,6 +323,7 @@ void CPU::OpcodeFx07()
 	m_Pc += 2;
 }
 
+// Wait for a key press AND release, store the value of the key in Vx
 void CPU::OpcodeFx0A()
 {
 	// Wait for a key press, store the value of the key in Vx
@@ -344,9 +354,7 @@ void CPU::OpcodeFx0A()
 			m_WaitingForKeyRelease = true;
 			m_WaitingKey = pressedKey;
 			m_WaitingKeyRegister = x;
-			// do not advance PC yet; will advance after release
 		}
-		// else do nothing, remain blocked
 	}
 	else
 	{
@@ -355,6 +363,7 @@ void CPU::OpcodeFx0A()
 	}
 }
 
+// set delay timer = Vx
 void CPU::OpcodeFx15()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -362,6 +371,7 @@ void CPU::OpcodeFx15()
 	m_Pc += 2;
 }
 
+// set sound timer = Vx
 void CPU::OpcodeFx18()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -369,6 +379,7 @@ void CPU::OpcodeFx18()
 	m_Pc += 2;
 }
 
+// set I = I + Vx
 void CPU::OpcodeFx1E()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -376,6 +387,7 @@ void CPU::OpcodeFx1E()
 	m_Pc += 2;
 }
 
+// set I = location of sprite for digit Vx (fontset)
 void CPU::OpcodeFx29()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -384,6 +396,7 @@ void CPU::OpcodeFx29()
 	m_Pc += 2;
 }
 
+// Store BCD representation of Vx in memory locations I, I+1, and I+2
 void CPU::OpcodeFx33()
 {
 	if (!m_pMemory) { OpcodeNULL(); return; }
@@ -398,6 +411,7 @@ void CPU::OpcodeFx33()
 	m_Pc += 2;
 }
 
+// Store registers V0 through Vx in memory starting at address I
 void CPU::OpcodeFx55()
 {
 	if (!m_pMemory) { OpcodeNULL(); return; }
@@ -410,6 +424,7 @@ void CPU::OpcodeFx55()
 	m_Pc += 2;
 }
 
+// Read registers V0 through Vx from memory starting at address I
 void CPU::OpcodeFx65()
 {
 	if (!m_pMemory) { OpcodeNULL(); return; }
@@ -422,13 +437,14 @@ void CPU::OpcodeFx65()
 	m_Pc += 2;
 }
 
-// Other specific opcodes
+// jump to address nnn
 void CPU::Opcode1nnn()
 {
 	unsigned short addr = m_Opcode & 0x0FFFu;
 	m_Pc = addr;
 }
 
+// push return address onto stack and jump to address nnn
 void CPU::Opcode2nnn()
 {
 	unsigned short addr = m_Opcode & 0x0FFFu;
@@ -444,6 +460,7 @@ void CPU::Opcode2nnn()
 	OpcodeNULL();
 }
 
+// Skip next instruction if Vx == kk
 void CPU::Opcode3xkk()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -451,6 +468,7 @@ void CPU::Opcode3xkk()
 	if (m_V[x] == kk) m_Pc += 4; else m_Pc += 2;
 }
 
+// Skip next instruction if Vx != kk
 void CPU::Opcode4xkk()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -458,6 +476,7 @@ void CPU::Opcode4xkk()
 	if (m_V[x] != kk) m_Pc += 4; else m_Pc += 2;
 }
 
+// Skip next instruction if Vx == Vy
 void CPU::Opcode5xy0()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -465,6 +484,7 @@ void CPU::Opcode5xy0()
 	if (m_V[x] == m_V[y]) m_Pc += 4; else m_Pc += 2;
 }
 
+// Set Vx = kk
 void CPU::Opcode6xkk()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -473,6 +493,7 @@ void CPU::Opcode6xkk()
 	m_Pc += 2;
 }
 
+// Set Vx = Vx + kk
 void CPU::Opcode7xkk()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -481,6 +502,7 @@ void CPU::Opcode7xkk()
 	m_Pc += 2;
 }
 
+// Skip next instruction if Vx != Vy
 void CPU::Opcode9xy0()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -488,6 +510,7 @@ void CPU::Opcode9xy0()
 	if (m_V[x] != m_V[y]) m_Pc += 4; else m_Pc += 2;
 }
 
+// Set I = nnn
 void CPU::OpcodeAnnn()
 {
 	unsigned short addr = m_Opcode & 0x0FFFu;
@@ -495,12 +518,14 @@ void CPU::OpcodeAnnn()
 	m_Pc += 2;
 }
 
+// Jump to location nnn + V0
 void CPU::OpcodeBnnn()
 {
 	unsigned short addr = m_Opcode & 0x0FFFu;
 	m_Pc = (unsigned short)(m_V[0] + addr);
 }
 
+// Set Vx = random byte AND kk
 void CPU::OpcodeCxkk()
 {
 	unsigned char x = (m_Opcode & 0x0F00u) >> 8u;
@@ -509,6 +534,8 @@ void CPU::OpcodeCxkk()
 	m_Pc += 2;
 }
 
+// Draw sprite at coordinate (Vx, Vy) with N bytes of sprite data starting at I
+// has a lot of quirks on the CHIP-8 related to wrapping and clipping
 void CPU::OpcodeDxyn()
 {
 	// Draw sprite at coordinate (Vx, Vy) with N bytes of sprite data starting at I
@@ -555,7 +582,6 @@ void CPU::OpcodeDxyn()
 				px = sx + (unsigned int)bit;
 				if (px >= screenW) continue;
 			}
-
 			const unsigned int idx = py * screenW + px;
 			if (screen[idx] != 0) m_V[0xF] = 1; // collision if pixel was set
 			m_pGraphics->SetPixel((unsigned char)px, (unsigned char)py);

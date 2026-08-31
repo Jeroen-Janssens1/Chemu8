@@ -1,8 +1,9 @@
 #pragma once
-class Memory; // forward-declare to avoid heavy include
-class Graphics; // forward-declare to avoid heavy include
-class InputHandler; // forward-declare
-class Audio; // forward-declare audio
+// forward-declares to avoid heavy include
+class Memory;
+class Graphics;
+class InputHandler;
+class Audio;
 class CPU final
 {
 public:
@@ -24,27 +25,16 @@ private:
 	unsigned char m_DelayTimer{}; // both these timers count at 60 Hz
 	unsigned char m_SoundTimer{}; // if this is 0, buzzer makes noise
 	const float m_Interval = 1.0f / 60.0f; // 60Hz timer interval in seconds
-
-	// Pointer to memory
 	Memory* m_pMemory{};
-
-	// Pointer to graphics
 	Graphics* m_pGraphics{};
-
+	InputHandler* m_pInput{};
+	Audio* m_pAudio{};
 	// Timer accumulator (for 60Hz timer updates)
 	float m_TimerAcc{};
-
-	// Pointer to input handler
-	InputHandler* m_pInput{};
-
-	// Audio subsystem (managed by CPU)
-	Audio* m_pAudio{};
-
 	// Fx0A waiting state: when true CPU is waiting for the previously detected key to be released
 	bool m_WaitingForKeyRelease{};
 	unsigned char m_WaitingKey{}; // which key we are waiting to be released
 	unsigned char m_WaitingKeyRegister{}; // which Vx register the pressed key was stored into
-
 
 	// Opcode functions
 	// Primary opcode group handlers (first nibble)
@@ -64,11 +54,9 @@ private:
 	void OpcodeD();
 	void OpcodeE();
 	void OpcodeF();
-
 	// 0x0 sub-table
 	void Opcode00E0(); // CLS
 	void Opcode00EE(); // RET
-
 	// 0x8 sub-table (arithmetic / logic)
 	void Opcode8xy0();
 	void Opcode8xy1();
@@ -79,12 +67,10 @@ private:
 	void Opcode8xy6();
 	void Opcode8xy7();
 	void Opcode8xyE();
-
 	// 0xE sub-table
 	void OpcodeEx9E();
 	void OpcodeExA1();
-
-	// 0xF sub-table (many opcodes indexed by lowest byte)
+	// 0xF sub-table
 	void OpcodeFx07();
 	void OpcodeFx0A();
 	void OpcodeFx15();
@@ -94,7 +80,6 @@ private:
 	void OpcodeFx33();
 	void OpcodeFx55();
 	void OpcodeFx65();
-
 	// Other specific opcodes
 	void Opcode1nnn();
 	void Opcode2nnn();
@@ -108,8 +93,7 @@ private:
 	void OpcodeBnnn();
 	void OpcodeCxkk();
 	void OpcodeDxyn();
-
-	// null opcode / ignored opcode
+	// null opcode / default handler for unimplemented opcodes and unexpected cases
 	void OpcodeNULL();
 
 	// Function tables
@@ -119,7 +103,4 @@ private:
 	OpFunc m_Table8[16]{};
 	OpFunc m_TableE[16]{};
 	OpFunc m_TableF[256]{};
-
-
 };
-

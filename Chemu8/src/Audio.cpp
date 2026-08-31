@@ -14,8 +14,7 @@ Audio::~Audio()
 {
 	if (m_Stream)
 	{
-		// Pause the stream; SDL will clean up on shutdown. Avoid calling
-		// SDL_CloseAudioStream here to maintain compatibility across SDL3 versions.
+		// Pause the stream; SDL will clean up on shutdown.
 		SDL_PauseAudioStreamDevice(m_Stream);
 		m_Stream = nullptr;
 	}
@@ -34,9 +33,6 @@ bool Audio::Initialize(int sampleRate)
 		m_Playing = false;
 		return false;
 	}
-
-	// Start the stream paused; we'll resume when SetPlaying(true) is called
-	SDL_ResumeAudioStreamDevice(m_Stream);
 	m_Playing = false;
 	m_Phase = 0.0f;
 	return true;
