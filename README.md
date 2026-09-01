@@ -1,5 +1,5 @@
 # Chemu8
-A simple Chip8 emulator written in C++ using SDL3.
+A simple Chip8 emulator written in C++ using SDL3 for Windows.
 
 ## How to use
 You can run the program through the terminal. Simply open a terminal in the folder with the .exe file and use the following command: .\Chemu8.exe .\programNameHere
@@ -7,16 +7,44 @@ You can run the program through the terminal. Simply open a terminal in the fold
 Replace the programNameHere with the program you want to boot up in the emulator. Make sure the program is in the same folder as the exe file. If it is in a deeper folder then add the entire path, starting from the folder the exe is in. Eg. If you store your programs in a sub-folder called ROMS then you would provide .\ROMS\ProgramNameHere instead.
 
 The controls are mapped as follows:
-Keypad                   Keyboard
-+-+-+-+-+                +-+-+-+-+
-|1|2|3|C|                |1|2|3|4|
-+-+-+-+-+                +-+-+-+-+
-|4|5|6|D|                |Q|W|E|R|
-+-+-+-+-+       =>       +-+-+-+-+
-|7|8|9|E|                |A|S|D|F|
-+-+-+-+-+                +-+-+-+-+
-|A|0|B|F|                |Z|X|C|V|
-+-+-+-+-+                +-+-+-+-+
+
+<table>
+<tr>
+<th>Keypad</th>
+<th></th>
+<th>Keyboard</th>
+</tr>
+<tr>
+<td>
+<pre>
++-+-+-+-+
+|1|2|3|C|
++-+-+-+-+
+|4|5|6|D|
++-+-+-+-+
+|7|8|9|E|
++-+-+-+-+
+|A|0|B|F|
++-+-+-+-+
+</pre>
+</td>
+<td><strong>⇒</strong></td>
+<td>
+<pre>
++-+-+-+-+
+|1|2|3|4|
++-+-+-+-+
+|Q|W|E|R|
++-+-+-+-+
+|A|S|D|F|
++-+-+-+-+
+|Z|X|C|V|
++-+-+-+-+
+</pre>
+</td>
+</tr>
+</table>
+
 
 For the provided tetris program the CHIP-8 keypad controls are:
 - 6: move block right
@@ -30,6 +58,8 @@ The emulator exists out of 6 separate parts as well as a main loop.
 ### Main
 The main function is repsonsible for creating the 6 main parts of the program as well as handeling the main loop and executing the respective parts their Update functions, as well as cleaning up once the main loop is ended.
 
+It specifically runs update functions for the InputHandler, CPU, Renderer and Audio.
+
 ### CPU
 The CPU is the beating heart of the program. It fetches opcodes from the memory and then executes them.
 
@@ -38,7 +68,7 @@ The execution of opcodes happens through function tables. This way we can use th
 Depending on the opcode the CPU will also have to interact with other parts of the project. These parts are the Memory, the Graphics, InputHandler and Audio.
 
 ### Memory
-The memory holds all of the emulated memory. The CHIP-8 functions purely on RAM memory. I chose to allocate 4kb of RAM, which would be accurate fort the devices it would have ran on. On top of this the memory also holds the call stack.
+The memory holds all of the emulated memory. The CHIP-8 functions purely on RAM memory. I chose to allocate 4kb of RAM, which would be accurate for the devices it would have ran on. On top of this the memory also holds the call stack.
 
 ### InputHandler
 The InputHandler handles the input. I initially did this using a big switch statement to map corresponding SDL key codes to the keypad of the CHIP-8. I later reworked this to instead use a hashmap (std::unordered_map) to map the SDL key codes to their corresponding keypad index values and then simply use this to set or unset the keypad keys. This makes it far more readable and easier to debug than using a switch statement.
