@@ -2,7 +2,9 @@
 A simple Chip8 emulator written in C++ using SDL3 for Windows.
 
 ## How to use
-You can run the program through the terminal. Simply open a terminal in the folder with the .exe file and use the following command: .\Chemu8.exe .\programNameHere
+You can simply run the .bat file in the release folder. This will launch the tetris program.
+
+Alternatively you can run the program manually through the terminal. Simply open a terminal in the folder with the .exe file and use the following command: .\Chemu8.exe .\programNameHere
 
 Replace the programNameHere with the program you want to boot up in the emulator. Make sure the program is in the same folder as the exe file. If it is in a deeper folder then add the entire path, starting from the folder the exe is in. Eg. If you store your programs in a sub-folder called ROMS then you would provide .\ROMS\ProgramNameHere instead.
 
@@ -45,6 +47,7 @@ The controls are mapped as follows:
 </tr>
 </table>
 
+Besides this you can use the ESC key to exit the emulator at any time.
 
 For the provided tetris program the CHIP-8 keypad controls are:
 - 6: move block right
